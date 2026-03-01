@@ -1,0 +1,47 @@
+---
+description: UserScript の開発・テスト手順と Playwright MCP の活用方法
+alwaysApply: true
+---
+
+# UserScript 開発ワークフロー
+
+## ブラウザでの調査・テスト手順
+
+Playwright MCP (`user-playwright`) を使って HTML/CSS の調査とスクリプトの動作確認を行う。
+
+### 1. HTML/CSS 構造の調査
+
+- `browser_evaluate` で任意の JavaScript を実行し、DOM 構造・CSS プロパティ・クラス名を取得する
+- `browser_snapshot` でアクセシビリティツリーを取得する
+- `browser_take_screenshot` で視覚的なレイアウトを確認する
+
+```javascript
+// 例: 要素の構造を調査
+browser_evaluate({ function: "() => { ... }" })
+```
+
+### 2. スクリプトの動作確認
+
+Playwright ブラウザでは Tampermonkey 等の Chrome 拡張は動作しない。
+`browser_evaluate` でスクリプト本体を直接注入してテストする。
+
+```javascript
+// script.js の中身をそのまま browser_evaluate で実行
+browser_evaluate({ function: "() => { (function() { 'use strict'; ... })(); }" })
+```
+
+### 3. 認証が必要なサイト
+
+Playwright ブラウザでログインが必要な場合、ユーザーに操作を依頼する。
+Playwright が動作しない場合でも諦めず、ユーザーに以下を依頼できる：
+
+- DevTools コンソールでの JavaScript 実行結果の共有
+- 対象サイトの HTML スナップショットの保存・共有
+- スクリーンショットの共有
+
+## Cursor IDE ブラウザ (`cursor-ide-browser`) の制約
+
+- Chrome 拡張が動作しない
+- `browser_console` ツールが存在しない（JavaScript 実行不可）
+- `browser_get_attribute` は `[role="columnheader"]` や `[role="gridcell"]` 等の一部 ARIA ロール要素で失敗する
+- `browser_snapshot` でアクセシビリティツリー、`browser_get_bounding_box` でサイズは取得可能
