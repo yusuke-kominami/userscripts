@@ -1,9 +1,11 @@
 ---
-description: UserScript の開発・テスト手順と Playwright MCP の活用方法
 alwaysApply: true
 ---
-
 # UserScript 開発ワークフロー
+
+## 基本方針
+
+DOM 構造の調査・バグ調査・動作確認が必要な場面では、**ユーザーにログ共有を何度も依頼するのではなく、Playwright MCP (`user-playwright`) で対象サイトを開いて自ら調査すること。** コンソールログのやり取りを繰り返すより、`browser_evaluate` や `browser_snapshot` で直接 DOM を確認する方が圧倒的に速い。
 
 ## ブラウザでの調査・テスト手順
 
@@ -32,9 +34,16 @@ browser_evaluate({ function: "() => { (function() { 'use strict'; ... })(); }" }
 
 ### 3. 認証が必要なサイト
 
-Playwright ブラウザでログインが必要な場合、ユーザーに操作を依頼する。
-Playwright が動作しない場合でも諦めず、ユーザーに以下を依頼できる：
+一部のサービス（ラクローなど）は Okta 等の SSO 認証が必要。Playwright ブラウザでは自動ログインできないため、以下の手順を取る：
 
+1. `browser_navigate` で SSO のログイン URL を開く
+2. ユーザーに Playwright ブラウザ上で認証操作を依頼する
+3. 認証完了後、`browser_snapshot` / `browser_evaluate` で調査を進める
+
+既知の認証 URL：
+- **ラクロー**: `https://hacomono-co.okta.com/home/rakuro/0oa2kites6ojDpzFX697/aln1j5hvib2d7CMWw1d8`
+
+Playwright が動作しない場合の代替手段：
 - DevTools コンソールでの JavaScript 実行結果の共有
 - 対象サイトの HTML スナップショットの保存・共有
 - スクリーンショットの共有

@@ -68,10 +68,21 @@
         return new Date(dateStr + 'T00:00:00');
     }
 
-    // 土日かどうかを判定（0=日曜, 6=土曜）
-    function isWeekend(date) {
-        const day = date.getDay();
-        return day === 0 || day === 6;
+    // 日付ヘッダー行から休日日付のセットを構築
+    function buildHolidaySet() {
+        const holidays = new Set();
+        const rows = document.querySelectorAll('.timeline-table__row');
+        rows.forEach(row => {
+            if (row.querySelector('[data-test-id]')) return;
+            const text = row.textContent.trim();
+            if (text.includes('法休') || text.includes('所休')) {
+                const match = text.match(/(\d{2})\/(\d{2})/);
+                if (match) {
+                    holidays.add(`${match[1]}-${match[2]}`);
+                }
+            }
+        });
+        return holidays;
     }
 
     // 今日の日付を取得（YYYY-MM-DD形式）
@@ -87,25 +98,14 @@
     function addRequiredWorkingHours() {
         console.log('[rakuro-flex-hours] メイン処理開始');
 
-        // DOMの読み込みを再確認
         const timelineRows = document.querySelectorAll('.timeline-table__row');
-        if (timelineRows.length === 0) {
-            console.log('[rakuro-flex-hours] テーブル行がまだ読み込まれていません。再試行します...');
-            return;
-        }
-        console.log('[rakuro-flex-hours] テーブル行数:', timelineRows.length);
+        if (timelineRows.length === 0) return;
 
-        // 所定労働時間を取得
         let scheduledMinutes = 0;
-        
-        // 「所定労働時間」または「所定労働時間:」というテキストを持つ要素を探す
         const allTds = document.querySelectorAll('td');
-        console.log('[rakuro-flex-hours] td要素の数:', allTds.length);
-        
         for (let td of allTds) {
-            const text = td.textContent.trim().replace(/\s+/g, ' '); // 空白を正規化
+            const text = td.textContent.trim().replace(/\s+/g, ' ');
             if (text.includes('所定労働時間')) {
-                console.log('[rakuro-flex-hours] 所定労働時間要素を発見:', text);
                 const timeMatch = text.match(/(\d+):(\d+)/);
                 if (timeMatch) {
                     scheduledMinutes = parseInt(timeMatch[1]) * 60 + parseInt(timeMatch[2]);
@@ -117,16 +117,14 @@
 
         if (scheduledMinutes === 0) {
             console.log('[rakuro-flex-hours] 所定労働時間が見つかりませんでした。処理を中断します。');
-            console.log('[rakuro-flex-hours] デバッグ: 最初の10個のtd要素のテキスト');
-            for (let i = 0; i < Math.min(10, allTds.length); i++) {
-                console.log(`  [${i}]:`, allTds[i].textContent.trim());
-            }
             return;
         }
 
         // 今日の日付を取得
         const today = getTodayString();
         console.log('[rakuro-flex-hours] 今日の日付:', today);
+
+        const holidaySet = buildHolidaySet();
 
         // テーブルの各行から労働時間を取得
         const rows = document.querySelectorAll('.timeline-table__row');
@@ -136,7 +134,6 @@
         const todayDate = parseDate(today);
 
         rows.forEach(row => {
-            // 日付を取得
             const dateElement = row.querySelector('[data-test-id]');
             if (!dateElement) return;
 
@@ -144,33 +141,27 @@
             if (!dateStr) return;
 
             const rowDate = parseDate(dateStr);
+            const monthDay = dateStr.substring(5).replace('-', '-');
+            const isHoliday = holidaySet.has(monthDay);
 
-            // 土日かどうかを判定
-            const isHoliday = isWeekend(rowDate);
-
-            // 労働時間を取得（「労働 / 休憩」の形式）
             const breakTimeElement = row.querySelector('.td-break-time__value');
             if (!breakTimeElement) return;
 
             const breakTimeText = breakTimeElement.textContent.trim();
             const [workTime] = breakTimeText.split('/').map(s => s.trim());
 
-            // 昨日以前の実労働時間を集計
             if (rowDate < todayDate) {
-                const minutes = timeToMinutes(workTime);
-                totalWorkedMinutes += minutes;
                 if (!isHoliday) {
+                    const minutes = timeToMinutes(workTime);
+                    totalWorkedMinutes += minutes;
                     daysUntilToday++;
                 }
             } else if (rowDate.getTime() === todayDate.getTime()) {
-                // 今日の労働時間（集計には含めない）
                 console.log('[rakuro-flex-hours] 今日の労働時間（参考）:', workTime);
-                // 今日以降の営業日をカウント（今日を含む）
                 if (!isHoliday) {
                     remainingDays++;
                 }
             } else {
-                // 明日以降の営業日をカウント（土日祝日を除外）
                 if (!isHoliday) {
                     remainingDays++;
                 }
@@ -202,38 +193,18 @@
             }
         }
 
-        // 各行に必要労働時間を追加
-        let addedCount = 0;
-        let validRowCount = 0; // dateStrがある行のカウント
-        rows.forEach((row, index) => {
+        rows.forEach((row) => {
             const dateElement = row.querySelector('[data-test-id]');
-            if (!dateElement) {
-                return;
-            }
+            if (!dateElement) return;
 
             const dateStr = dateElement.getAttribute('data-test-id');
-            if (!dateStr) {
-                return;
-            }
+            if (!dateStr) return;
 
             const rowDate = parseDate(dateStr);
             const breakTimeCell = row.querySelector('.td.td-break-time');
-            
-            // 土日かどうかを判定
-            const isHoliday = isWeekend(rowDate);
-            
-            // 土日祝日の詳細をログ出力（最初の15行）
-            if (validRowCount < 15) {
-                console.log(`[rakuro-flex-hours] 行${validRowCount} (${dateStr}):`, {
-                    breakTimeCell: !!breakTimeCell,
-                    今日以降: rowDate >= todayDate,
-                    曜日: rowDate.getDay(),
-                    土日: isHoliday
-                });
-            }
-            validRowCount++;
+            const monthDay = dateStr.substring(5).replace('-', '-');
+            const isHoliday = holidaySet.has(monthDay);
 
-            // セルを追加
             if (breakTimeCell && !row.querySelector('.td-required-time')) {
                 const requiredCell = document.createElement('div');
                 requiredCell.className = 'td td-required-time px-2 overflow-hidden';
@@ -248,11 +219,8 @@
                 }
                 
                 breakTimeCell.parentNode.insertBefore(requiredCell, breakTimeCell.nextSibling);
-                addedCount++;
             }
         });
-        
-        console.log('[rakuro-flex-hours] データセルを追加しました:', addedCount, '個');
 
         console.log('[rakuro-flex-hours] 完了');
     }
@@ -267,15 +235,7 @@
         const hasTds = document.querySelectorAll('td').length > 0;
         const hasBreakTime = document.querySelectorAll('.td-break-time__value').length > 0;
         
-        console.log('[rakuro-flex-hours] DOM読み込み状況 (試行' + (retryCount + 1) + '/' + maxRetries + '):', {
-            rows: document.querySelectorAll('.timeline-table__row').length,
-            tds: document.querySelectorAll('td').length,
-            breakTimes: document.querySelectorAll('.td-break-time__value').length
-        });
-        
         if (hasRows && hasBreakTime && hasTds) {
-            // 全ての要素が揃った
-            console.log('[rakuro-flex-hours] DOM読み込み完了。処理を開始します。');
             addRequiredWorkingHours();
         } else if (retryCount < maxRetries) {
             // まだ揃っていないので再試行

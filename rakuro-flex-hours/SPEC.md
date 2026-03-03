@@ -47,7 +47,7 @@
 
 2. **昨日までの実労働時間の集計**
    - テーブルの各行から日付と「労働 / 休憩」の値を取得
-   - 今日の日付より前の行の労働時間を合計
+   - 今日の日付より前かつ**営業日のみ**の労働時間を合計（休日は除外）
    - 形式: `HH:MM / HH:MM`（労働 / 休憩）の左側の値を使用
 
 3. **残りの日数のカウント**
@@ -85,6 +85,9 @@
 
 #### `getTodayString()`
 - 今日の日付をYYYY-MM-DD形式で取得
+
+#### `buildHolidaySet()`
+- 日付ヘッダー行から「法休」「所休」を含む日付のセットを構築
 
 #### `addRequiredWorkingHours()`
 - メイン処理：必要労働時間を計算し、テーブルに追加
@@ -143,15 +146,15 @@ breakTimeCell.parentNode.insertBefore(requiredCell, breakTimeCell.nextSibling);
 
 **抽出**: `/` で分割して左側の値を使用
 
-### 5.4 土日祝日の判定
+### 5.4 休日の判定
 
-**セレクタ**: `.timeline-date`
+**判定方法**: 日付ヘッダー行（`[data-test-id]` を持たない `.timeline-table__row`）のテキストで判別
+- `法休`: 法定休日 - 日曜日など
+- `所休`: 所定休日 - 土曜日、祝日など
 
-**判定方法**: CSSクラスで判別
-- `date-type-legal_holiday`: 法定休日（法休） - 日曜日など
-- `date-type-excess_statutory_holiday`: 所定休日（所休） - 土曜日、祝日など
+**DOM構造**: `.timeline-table__row` は日付ヘッダー行（31行）とデータ行（31行）の計62行で構成される。ヘッダー行に休日種別テキストが含まれ、データ行は `[data-test-id]` 属性（YYYY-MM-DD）を持つ。
 
-**処理**: 上記いずれかのクラスを持つ日は営業日から除外
+**処理**: ヘッダー行から休日日付のセットを構築し、データ行の集計時に参照する
 
 ## 6. UI設計
 
@@ -177,22 +180,21 @@ breakTimeCell.parentNode.insertBefore(requiredCell, breakTimeCell.nextSibling);
 
 スクリプトは以下のログを出力：
 
-- `[rakuro-userscript] スクリプト開始`
-- `[rakuro-userscript] メイン処理開始`
-- `[rakuro-userscript] 所定労働時間: XX:XX`
-- `[rakuro-userscript] 今日の日付: YYYY-MM-DD`
-- `[rakuro-userscript] 昨日までの労働時間: XX:XX`
-- `[rakuro-userscript] 昨日までの営業日数: N`
-- `[rakuro-userscript] 残りの営業日数: N`
-- `[rakuro-userscript] 今後1日あたりの必要労働時間: XX:XX`
-- `[rakuro-userscript] ヘッダーカラムを追加しました`
-- `[rakuro-userscript] 完了`
+- `[rakuro-flex-hours] スクリプト開始`
+- `[rakuro-flex-hours] メイン処理開始`
+- `[rakuro-flex-hours] 所定労働時間: XX:XX`
+- `[rakuro-flex-hours] 今日の日付: YYYY-MM-DD`
+- `[rakuro-flex-hours] 昨日までの労働時間: XX:XX`
+- `[rakuro-flex-hours] 昨日までの営業日数: N`
+- `[rakuro-flex-hours] 残りの営業日数: N`
+- `[rakuro-flex-hours] 今後1日あたりの必要労働時間: XX:XX`
+- `[rakuro-flex-hours] 完了`
 
 ### 7.2 デバッグ方法
 
 1. ブラウザの開発者ツール（F12）を開く
 2. コンソールタブを確認
-3. `[rakuro-userscript]` でフィルタリング
+3. `[rakuro-flex-hours]` でフィルタリング
 
 ## 8. 制約事項
 
