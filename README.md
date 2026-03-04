@@ -8,6 +8,7 @@
 |:---|:---|:---|
 | [rakuro-flex-hours](rakuro-flex-hours/) | ラクローにフルフレックス向け必要労働時間を表示 | raku-ro.com |
 | [gcal-narrow-weekends](gcal-narrow-weekends/) | Google カレンダー週次表示の休日列幅を縮小 | calendar.google.com |
+| [notion-clean-page-controls](notion-clean-page-controls/) | Notion ページ上部の不要ボタン非表示・余白縮小 | notion.so |
 
 ## 🛠 動作環境
 
