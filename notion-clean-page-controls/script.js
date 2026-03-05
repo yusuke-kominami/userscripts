@@ -96,6 +96,11 @@
         .notion-timeline-view div[style*="sticky-horizontal-offset"] {
             display: none !important;
         }
+
+        /* リンクドデータベースのヘッダー右パディングを除去してツールバーを右端まで広げる */
+        div[data-content-editable-void="true"]:has(.notion-collection_view-block) {
+            padding-right: 0px !important;
+        }
     `;
 
     function isTargetPage() {
