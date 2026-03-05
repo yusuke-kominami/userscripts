@@ -5,9 +5,12 @@
     const TARGET_PAGE_ID = '319503c7791d803a8917c3dfcf9c97af';
 
     const CSS = `
+        /* ページ幅を狭める */
         .layout.layout-wide {
             --margin-width: 60px !important;
         }
+
+        /* ページ上部コントロールのボタン類を非表示 */
         .notion-page-controls {
             padding-top: 30px !important;
         }
@@ -15,16 +18,19 @@
         .notion-page-controls > [data-popup-origin] {
             display: none !important;
         }
+
+        /* ページアイコン非表示（日英両対応） */
         .notion-record-icon[aria-label*="page icon"],
         .notion-record-icon[aria-label*="ページアイコン"] {
             display: none !important;
         }
-        /* Parent task: left panel - bold */
+
+        /* 親タスク: 左パネルのタスク名を太字に */
         .notion-timeline-view .notion-collection-item[data-parent-task] [data-col-index="0"] [data-testid="property-value"] span {
             font-weight: 700 !important;
         }
 
-        /* Child task: left panel - deeper indent with bullet */
+        /* 子タスク: 左パネルで「-」箇条書き＋深いインデント */
         .notion-collection-item:has(.arrowTurnLeftUpSmall) [data-col-index="0"] [data-testid="property-value"] {
             padding-inline-start: 36px !important;
         }
@@ -34,6 +40,8 @@
             inset-inline-start: 24px !important;
             color: var(--c-texTer) !important;
         }
+
+        /* 子タスク: 左パネルの矢印アイコン・親タスク名を縮小 */
         .notion-collection-item:has(.arrowTurnLeftUpSmall) [data-col-index="0"] [data-popup-origin] .arrowTurnLeftUpSmall {
             width: 12px !important;
             height: 12px !important;
@@ -42,18 +50,26 @@
             font-size: 10px !important;
             line-height: 14px !important;
         }
+
+        /* タイムライン上の依存線（SVG）を非表示 */
         .notion-timeline-view svg[style*="z-index: 83"] {
             display: none !important;
         }
+
+        /* タイムラインバー上の親ページ名ラベルを非表示（日英両対応） */
         .notion-timeline-view [aria-label*="親ページ"]:not(.notion-collection-item *),
         .notion-timeline-view [aria-label*="parent page"]:not(.notion-collection-item *),
         .notion-timeline-view [data-popup-origin]:has(.arrowTurnLeftUpSmall):not(.notion-collection-item *) {
             display: none !important;
         }
+
+        /* タイムラインバー上のタスク名を小さくグレー表示 */
         .notion-timeline-item-properties, .notion-timeline-item-properties * {
             font-size: 12px !important;
             color: rgba(255, 255, 255, 0.3) !important;
         }
+
+        /* 左パネルの条件付きカラー背景を透明化 */
         .notion-timeline-view .notion-collection-item .notion-table-view-row {
             background: transparent !important;
         }
@@ -73,6 +89,11 @@
             border-radius: 4px !important;
         }
         .notion-timeline-item-row[data-parent-task] .notion-timeline-item-properties {
+            display: none !important;
+        }
+
+        /* タイムライン上部の浮遊ナビバー非表示（「カレンダーで管理」「月」「< 今日 >」） */
+        .notion-timeline-view div[style*="sticky-horizontal-offset"] {
             display: none !important;
         }
     `;
