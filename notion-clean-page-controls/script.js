@@ -74,22 +74,11 @@
             background: transparent !important;
         }
 
-        /* Child/standalone task: right panel - slightly narrower bar */
-        .notion-timeline-item-row:not([data-parent-task]) .notion-timeline-item {
+        /* 全タイムラインバーを少し狭める */
+        .notion-timeline-item-row .notion-timeline-item {
             height: 24px !important;
             margin-top: 5px !important;
             margin-bottom: 5px !important;
-        }
-
-        /* Parent task: right panel - thin bar within same row height */
-        .notion-timeline-item-row[data-parent-task] .notion-timeline-item {
-            height: 8px !important;
-            margin-top: 13px !important;
-            margin-bottom: 13px !important;
-            border-radius: 4px !important;
-        }
-        .notion-timeline-item-row[data-parent-task] .notion-timeline-item-properties {
-            display: none !important;
         }
 
         /* タイムライン上部の浮遊ナビバー非表示（「カレンダーで管理」「月」「< 今日 >」） */
