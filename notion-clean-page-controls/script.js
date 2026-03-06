@@ -30,9 +30,10 @@
             font-weight: 700 !important;
         }
 
-        /* 子タスク: 左パネルで「-」箇条書き＋深いインデント */
+        /* 子タスク: 左パネルで「-」箇条書き＋深いインデント＋タスク名をグレー寄りに */
         .notion-collection-item:has(.arrowTurnLeftUpSmall) [data-col-index="0"] [data-testid="property-value"] {
             padding-inline-start: 36px !important;
+            color: var(--c-texTer) !important;
         }
         .notion-collection-item:has(.arrowTurnLeftUpSmall) [data-col-index="0"] [data-testid="property-value"]::before {
             content: "-" !important;
