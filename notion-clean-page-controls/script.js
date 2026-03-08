@@ -30,10 +30,10 @@
             font-weight: 700 !important;
         }
 
-        /* 子タスク: 左パネルで「-」箇条書き＋深いインデント＋タスク名をグレー寄りに */
+        /* 子タスク: 左パネルで「-」箇条書き＋深いインデント＋タスク名をやや控えめに */
         .notion-collection-item:has(.arrowTurnLeftUpSmall) [data-col-index="0"] [data-testid="property-value"] {
             padding-inline-start: 36px !important;
-            color: var(--c-texTer) !important;
+            color: var(--c-texSec) !important;
         }
         .notion-collection-item:has(.arrowTurnLeftUpSmall) [data-col-index="0"] [data-testid="property-value"]::before {
             content: "-" !important;
@@ -68,6 +68,21 @@
         .notion-timeline-item-properties, .notion-timeline-item-properties * {
             font-size: 12px !important;
             color: rgba(255, 255, 255, 0.3) !important;
+        }
+        /* タイムラインバー上のステータス: テキストとバッジ背景を消し、色付きドットのみ残す */
+        .notion-timeline-item-properties > div:nth-child(2) span {
+            display: none !important;
+        }
+        .notion-timeline-item-properties > div:nth-child(2) div[style*="border-radius: 9px"] {
+            background: transparent !important;
+            padding-inline: 0 !important;
+        }
+        .notion-timeline-item-properties > div:nth-child(2) div[style*="border-radius: 99px"] {
+            width: 10px !important;
+            height: 10px !important;
+        }
+        .notion-timeline-item-properties > div:nth-child(2) {
+            margin-inline-start: -6px !important;
         }
 
         /* 左パネルの条件付きカラー背景を透明化 */
