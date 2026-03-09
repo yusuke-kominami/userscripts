@@ -64,15 +64,29 @@
 - **既に規定時間を超過している場合**: 0:00 を表示
 - **所定労働時間が取得できない場合**: 処理を中断
 
-## 4. 実装詳細
+## 4. Tampermonkey 登録用ヘッダー
 
-### 4.1 技術スタック
+```javascript
+// ==UserScript==
+// @name         rakuro-flex-hours
+// @description  ラクローの勤怠画面に今後1日あたりの必要労働時間を表示
+// @version      2026-03-01
+// @match        *://*.raku-ro.com/*
+// @require      file:///{リポジトリのパス}/rakuro-flex-hours/script.js
+// @grant        none
+// @run-at       document-end
+// ==/UserScript==
+```
+
+## 5. 実装詳細
+
+### 5.1 技術スタック
 
 - **実行環境**: Tampermonkey (UserScript)
 - **対象サイト**: `*://*.raku-ro.com/*`
 - **言語**: JavaScript (Vanilla JS)
 
-### 4.2 主要な関数
+### 5.2 主要な関数
 
 #### `timeToMinutes(timeStr)`
 - 時間文字列（HH:MM）を分に変換
@@ -95,7 +109,7 @@
 #### `waitForElement(selector, callback, maxAttempts)`
 - DOMの読み込み完了を待つヘルパー関数
 
-### 4.3 DOM操作
+### 5.3 DOM操作
 
 #### ヘッダーの追加
 ```javascript
@@ -115,14 +129,14 @@ requiredCell.innerHTML = `<div class="text-center text-nowrap">${requiredTimeStr
 breakTimeCell.parentNode.insertBefore(requiredCell, breakTimeCell.nextSibling);
 ```
 
-### 4.4 SPA対応
+### 5.4 SPA対応
 
 - `MutationObserver` を使用してページ遷移を検知
 - URL変更時に自動で再実行
 
-## 5. データ取得方法
+## 6. データ取得方法
 
-### 5.1 所定労働時間
+### 6.1 所定労働時間
 
 **セレクタ**: `td` 要素の中から「所定労働時間:」を含むテキストを検索
 
@@ -132,13 +146,13 @@ breakTimeCell.parentNode.insertBefore(requiredCell, breakTimeCell.nextSibling);
 144:00
 ```
 
-### 5.2 日付
+### 6.2 日付
 
 **セレクタ**: `.timeline-table__row` 内の `[data-test-id]` 属性
 
 **形式**: `YYYY-MM-DD`（例: `2026-02-01`）
 
-### 5.3 労働時間
+### 6.3 労働時間
 
 **セレクタ**: `.td-break-time__value`
 
@@ -146,7 +160,7 @@ breakTimeCell.parentNode.insertBefore(requiredCell, breakTimeCell.nextSibling);
 
 **抽出**: `/` で分割して左側の値を使用
 
-### 5.4 休日の判定
+### 6.4 休日の判定
 
 **判定方法**: 日付ヘッダー行（`[data-test-id]` を持たない `.timeline-table__row`）のテキストで判別
 - `法休`: 法定休日 - 日曜日など
@@ -156,9 +170,9 @@ breakTimeCell.parentNode.insertBefore(requiredCell, breakTimeCell.nextSibling);
 
 **処理**: ヘッダー行から休日日付のセットを構築し、データ行の集計時に参照する
 
-## 6. UI設計
+## 7. UI設計
 
-### 6.1 レイアウト
+### 7.1 レイアウト
 
 ```
 | 勤怠申請 | 始業 | 終業 | 労働 / 休憩 | 必要労働時間 | 修正理由 |
@@ -167,16 +181,16 @@ breakTimeCell.parentNode.insertBefore(requiredCell, breakTimeCell.nextSibling);
 | ...      | ...  | ...  | 8:59 / 1:00 | 7:30         | ...      |
 ```
 
-### 6.2 スタイリング
+### 7.2 スタイリング
 
 - 既存のクラス名を使用して自然に統合
 - `.th-required-time`: ヘッダー用
 - `.td-required-time`: データセル用
 - `text-center text-nowrap`: テキスト中央揃え、折り返しなし
 
-## 7. デバッグ
+## 8. デバッグ
 
-### 7.1 コンソールログ
+### 8.1 コンソールログ
 
 スクリプトは以下のログを出力：
 
@@ -190,21 +204,21 @@ breakTimeCell.parentNode.insertBefore(requiredCell, breakTimeCell.nextSibling);
 - `[rakuro-flex-hours] 今後1日あたりの必要労働時間: XX:XX`
 - `[rakuro-flex-hours] 完了`
 
-### 7.2 デバッグ方法
+### 8.2 デバッグ方法
 
 1. ブラウザの開発者ツール（F12）を開く
 2. コンソールタブを確認
 3. `[rakuro-flex-hours]` でフィルタリング
 
-## 8. 制約事項
+## 9. 制約事項
 
-### 8.1 現在の制約
+### 9.1 現在の制約
 
 - 有給休暇（全休・半休）は考慮していない
 - 所定労働時間はページから取得するため、手動で設定できない
 - 今日の日付はクライアントの時刻に依存する
 
-### 8.2 前提条件
+### 9.2 前提条件
 
 - ラクローの勤怠管理画面（月次カレンダー表示）で動作
 - テーブル構造が変更されると動作しなくなる可能性がある
