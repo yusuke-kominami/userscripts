@@ -2,7 +2,6 @@
     'use strict';
 
     const STYLE_ID = 'notion-clean-page-controls-style';
-    const TARGET_PAGE_ID = '319503c7791d803a8917c3dfcf9c97af';
 
     const CSS = `
         /* ページ幅を狭める */
